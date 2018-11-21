@@ -38,17 +38,12 @@ const serialize = (obj, opts) => {
     return serializeError(obj);
   }
   if (typeof obj === 'object') {
-    Object.keys(obj).forEach(key => {
-      obj[key] = serialize(obj[key], opts);
-    });
     // obscure any blacklisted tags:
     const blacklistRegEx = new RegExp(options.blacklist, 'i'); // blacklist is case insensitive
     Object.keys(obj).forEach(key => {
+      obj[key] = serialize(obj[key], opts);
       if (key.match && key.match(blacklistRegEx) !== null) {
         obj[key] = 'xxxxxx';
-      }
-      if (obj[key] instanceof Error) {
-        obj[key] = serialize(obj[key], options);
       }
     });
   }
