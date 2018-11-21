@@ -80,3 +80,29 @@ test('handle wreck json errors', async t => {
   await server.stop();
   t.end();
 });
+
+test('handle nested things', t => {
+  const r = {
+    err: new Error('some error'),
+    buffer: Buffer.from('hi there', 'utf8'),
+    names: {
+      spader: '2'
+    }
+  };
+  const message = serialize(r, { blacklist: 'spader' } );
+  t.match(message, {
+    err: {
+      name: 'Error',
+      message: 'some error'
+    },
+    buffer: {
+      type: 'Buffer',
+      length: 8
+    },
+    names: {
+      spader: 'xxxxxx'
+    }
+  });
+  t.ok(r.err.stack);
+  t.end();
+});
