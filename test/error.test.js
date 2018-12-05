@@ -47,6 +47,18 @@ test('can use the blacklist regex to filter out sensitive info', t => {
   t.end();
 });
 
+test('blacklist will not change the original message object', t => {
+  const messageObject = {
+    james: '1',
+    spader: 'something secret'
+  };
+  const serialized = serialize(messageObject, {
+    blacklist: 'spader'
+  });
+  t.equal(messageObject.spader, 'something secret');
+  t.end();
+});
+
 test('handle Buffer', t => {
   const message = serialize(Buffer.from('hi there', 'utf8'));
   t.match(message, {
@@ -104,5 +116,11 @@ test('handle nested things', t => {
     }
   });
   t.ok(r.err.stack);
+  t.end();
+});
+
+test('return strings without changing them', t => {
+  const message = serialize('this is just a message', {});
+  t.equal(message, 'this is just a message');
   t.end();
 });

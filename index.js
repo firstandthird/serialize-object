@@ -10,44 +10,49 @@ const serializeError = (obj, opts) => {
   if (obj.data && (obj.data.isResponseError || obj.data.res)) {
     const res = obj.data.res;
     const payload = res.payload;
-    obj = {
+    const clonedObj = {
       message: `Response Error: ${res.statusCode}  ${res.statusMessage}`,
       statusCode: res.statusCode,
     };
     // wreck won't include a payload if there was a json parse error:
     if (payload) {
-      obj.payload = payload;
+      clonedObj.payload = payload;
     }
-    return obj;
+    return clonedObj;
   }
   // otherwise it's a normal error:
   return serializeInner(obj);
 };
 
-const serialize = (obj, opts) => {
-  const options = Object.assign({}, defaults, opts);
-  // if obj is a buffer, return the length of the buffer instead of the contents:
-  if (obj instanceof Buffer) {
-    return {
-      type: 'Buffer',
-      length: obj.length
-    }
+const serialize = (originalObj, opts, top=true) => {
+  if (typeof originalObj === 'string') {
+    return originalObj;
   }
   //if obj is an error, turn it into a pretty object because Errors aren't json.stringifiable
-  if (obj instanceof Error) {
-    return serializeError(obj);
+  if (originalObj instanceof Error) {
+    return serializeError(originalObj);
   }
-  if (typeof obj === 'object') {
+  // if originalObj is a buffer, return the length of the buffer instead of the contents:
+  if (originalObj instanceof Buffer) {
+    return {
+      type: 'Buffer',
+      length: originalObj.length
+    }
+  }
+  // serialize-object does not modify the original object:
+  const clonedObj = top ? Object.assign({}, originalObj) : originalObj;
+  const options = Object.assign({}, defaults, opts);
+  if (typeof clonedObj === 'object') {
     // obscure any blacklisted tags:
     const blacklistRegEx = new RegExp(options.blacklist, 'i'); // blacklist is case insensitive
-    Object.keys(obj).forEach(key => {
-      obj[key] = serialize(obj[key], opts);
+    Object.keys(clonedObj).forEach(key => {
+      clonedObj[key] = serialize(clonedObj[key], opts, false);
       if (key.match && key.match(blacklistRegEx) !== null) {
-        obj[key] = 'xxxxxx';
+        clonedObj[key] = 'xxxxxx';
       }
     });
   }
-  return obj;
+  return clonedObj;
 };
 
 module.exports = serialize;
