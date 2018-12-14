@@ -119,6 +119,35 @@ test('handle nested things', t => {
   t.end();
 });
 
+test('wont fail on null element', t => {
+  const r = {
+    err: new Error('some error'),
+    buffer: Buffer.from('hi there', 'utf8'),
+    names: {
+      spader: '2',
+      nothing: null
+    }
+  };
+  const message = serialize(r, { blacklist: 'spader' } );
+  t.match(message, {
+    err: {
+      name: 'Error',
+      message: 'some error'
+    },
+    buffer: {
+      type: 'Buffer',
+      length: 8
+    },
+    names: {
+      spader: 'xxxxxx',
+      nothing: null
+    }
+  });
+  t.ok(r.err.stack);
+  t.end();
+});
+
+
 test('return strings without changing them', t => {
   const message = serialize('this is just a message', {});
   t.equal(message, 'this is just a message');

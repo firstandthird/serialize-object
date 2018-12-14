@@ -25,7 +25,7 @@ const serializeError = (obj, opts) => {
 };
 
 const serialize = (originalObj, opts, top=true) => {
-  if (typeof originalObj === 'string') {
+  if (typeof originalObj === 'string' || originalObj === null || originalObj === undefined) {
     return originalObj;
   }
   //if obj is an error, turn it into a pretty object because Errors aren't json.stringifiable
