@@ -24,7 +24,7 @@ const serializeError = (obj, opts) => {
   return serializeInner(obj);
 };
 
-const serialize = (originalObj, opts, top=true) => {
+const serialize = (originalObj, opts) => {
   if (typeof originalObj === 'string' || originalObj === null || originalObj === undefined) {
     return originalObj;
   }
@@ -40,7 +40,7 @@ const serialize = (originalObj, opts, top=true) => {
     }
   }
   // serialize-object does not modify the original object:
-  const clonedObj = top ? Object.assign({}, originalObj) : originalObj;
+  const clonedObj = Object.assign({}, originalObj);
   const options = Object.assign({}, defaults, opts);
   if (typeof clonedObj === 'object') {
     // obscure any blacklisted tags:

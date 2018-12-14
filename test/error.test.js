@@ -50,12 +50,17 @@ test('can use the blacklist regex to filter out sensitive info', t => {
 test('blacklist will not change the original message object', t => {
   const messageObject = {
     james: '1',
-    spader: 'something secret'
+    spader: 'something secret',
+    subPlot: {
+      whodoneit: 'guesswho',
+      spader: 'moar secrets'
+    }
   };
   const serialized = serialize(messageObject, {
     blacklist: 'spader'
   });
   t.equal(messageObject.spader, 'something secret');
+  t.equal(messageObject.subPlot.spader, 'moar secrets');
   t.end();
 });
 
