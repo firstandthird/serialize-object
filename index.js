@@ -1,7 +1,8 @@
 const serializeInner = require('serialize-error');
 
 const defaults = {
-  blacklist: 'password|token'
+  blacklist: 'password|token',
+  level: 3
 };
 
 // serialize error:
@@ -24,9 +25,14 @@ const serializeError = (obj, opts) => {
   return serializeInner(obj);
 };
 
-const serialize = (originalObj, opts) => {
+const serialize = (originalObj, opts, level = 0) => {
+  const options = Object.assign({}, defaults, opts);
+
   if (typeof originalObj === 'string' || originalObj === null || originalObj === undefined) {
     return originalObj;
+  }
+  if (level > options.level) {
+    return '...';
   }
   //if obj is an error, turn it into a pretty object because Errors aren't json.stringifiable
   if (originalObj instanceof Error) {
@@ -37,16 +43,15 @@ const serialize = (originalObj, opts) => {
     return {
       type: 'Buffer',
       length: originalObj.length
-    }
+    };
   }
   // serialize-object does not modify the original object:
   const clonedObj = Object.assign({}, originalObj);
-  const options = Object.assign({}, defaults, opts);
   if (typeof clonedObj === 'object') {
     // obscure any blacklisted tags:
     const blacklistRegEx = new RegExp(options.blacklist, 'i'); // blacklist is case insensitive
     Object.keys(clonedObj).forEach(key => {
-      clonedObj[key] = serialize(clonedObj[key], opts, false);
+      clonedObj[key] = serialize(clonedObj[key], opts, (level + 1));
       if (key.match && key.match(blacklistRegEx) !== null) {
         clonedObj[key] = 'xxxxxx';
       }
