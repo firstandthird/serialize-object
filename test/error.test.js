@@ -56,7 +56,7 @@ test('blacklist will not change the original message object', t => {
       spader: 'moar secrets'
     }
   };
-  const serialized = serialize(messageObject, {
+  serialize(messageObject, {
     blacklist: 'spader'
   });
   t.equal(messageObject.spader, 'something secret');
@@ -106,7 +106,7 @@ test('handle nested things', t => {
       spader: '2'
     }
   };
-  const message = serialize(r, { blacklist: 'spader' } );
+  const message = serialize(r, { blacklist: 'spader' });
   t.match(message, {
     err: {
       name: 'Error',
@@ -124,6 +124,48 @@ test('handle nested things', t => {
   t.end();
 });
 
+test('handle max levels', t => {
+  const r = {
+    err: new Error('some error'),
+    names: {
+      spader: '2'
+    },
+    one: {
+      two: {
+        three: {
+          four: 'Too many',
+          five: {
+            messsage: 'all gone'
+          }
+        },
+        threeB: 'Would still be here'
+      }
+    }
+  };
+  const message = serialize(r, { blacklist: 'spader' });
+  t.match(message, {
+    err: {
+      name: 'Error',
+      message: 'some error'
+    },
+    names: {
+      spader: 'xxxxxx'
+    },
+    one: {
+      two: {
+        three: {
+          four: 'Too many',
+          five: '...'
+        },
+        threeB: 'Would still be here'
+      }
+    }
+  });
+  t.ok(r.err.stack);
+  t.end();
+});
+
+
 test('wont fail on null element', t => {
   const r = {
     err: new Error('some error'),
@@ -133,7 +175,7 @@ test('wont fail on null element', t => {
       nothing: null
     }
   };
-  const message = serialize(r, { blacklist: 'spader' } );
+  const message = serialize(r, { blacklist: 'spader' });
   t.match(message, {
     err: {
       name: 'Error',
