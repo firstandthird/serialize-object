@@ -166,7 +166,7 @@ tap.test('handle max levels', t => {
 });
 
 
-tap.only('wont fail on null element', t => {
+tap.test('wont fail on null element', t => {
   const r = {
     err: new Error('some error'),
     buffer: Buffer.from('hi there', 'utf8'),
