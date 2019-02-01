@@ -28,6 +28,10 @@ const serializeError = (obj, opts) => {
 const serialize = (originalObj, opts, level = 0) => {
   const options = Object.assign({}, defaults, opts);
 
+  if (typeof originalObj === 'function') {
+    return `Function ${originalObj.name}`;
+  }
+
   if (originalObj === null || typeof originalObj !== 'object') {
     return originalObj;
   }

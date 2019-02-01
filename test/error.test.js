@@ -194,7 +194,7 @@ tap.test('wont fail on null element', t => {
   t.end();
 });
 
-tap.only('wont fail on numbers', t => {
+tap.test('wont fail on numbers', t => {
   const r = {
     numbers: {
       one: 1,
@@ -215,6 +215,38 @@ tap.only('wont fail on numbers', t => {
       spader: 'xxxxxx',
       nothing: null
     }
+  });
+  t.end();
+});
+
+tap.test('will pass back name of function', t => {
+  const someFunction = (src) => {
+    const x = src + 0;
+    return `Full: ${x}`;
+  };
+
+  const r = {
+    numbers: {
+      one: 1,
+      two: 2
+    },
+    names: {
+      spader: '2',
+      nothing: null
+    },
+    func: someFunction
+  };
+  const message = serialize(r, { blacklist: 'spader' });
+  t.match(message, {
+    numbers: {
+      one: 1,
+      two: 2
+    },
+    names: {
+      spader: 'xxxxxx',
+      nothing: null
+    },
+    func: 'Function someFunction'
   });
   t.end();
 });
