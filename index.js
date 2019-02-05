@@ -50,6 +50,15 @@ const serialize = (originalObj, opts, level = 0) => {
       length: originalObj.length
     };
   }
+
+  if (Array.isArray(originalObj)) {
+    const serializedArray = originalObj.map(item => {
+      const result = serialize(item, options, 1);
+      return result;
+    });
+
+    return serializedArray;
+  }
   // serialize-object does not modify the original object:
   const clonedObj = Object.assign({}, originalObj);
   if (typeof clonedObj === 'object') {

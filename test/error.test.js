@@ -257,3 +257,15 @@ tap.test('return strings without changing them', t => {
   t.equal(message, 'this is just a message');
   t.end();
 });
+
+tap.test('return array without changing type', t => {
+  const message = serialize({ organic: ['hapi', 'sed'] }, {});
+  t.same(message, { organic: ['hapi', 'sed'] });
+  t.end();
+});
+
+tap.test('return array of objects serialized', t => {
+  const message = serialize({ organic: [{ one: 'one', two: 'deu', trois: { eng: 'english', fr: 'french' } }] }, { blacklist: 'two' });
+  t.same(message, { organic: [{ one: 'one', two: 'xxxxxx', trois: { eng: 'english', fr: 'french' } }] });
+  t.end();
+});
