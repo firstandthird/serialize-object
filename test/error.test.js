@@ -1,12 +1,12 @@
-const test = require('tap').test;
+const tap = require('tap');
 const serialize = require('../');
 const wreck = require('wreck');
 const Hapi = require('hapi');
 
-test('handle errors', t => {
+tap.test('handle errors', t => {
   try {
     const r = {};
-    console.log(r.does.not.exist);
+    const math = r.does.not.exist; // eslint-disable-line
   } catch (e) {
     const message = serialize(e);
     t.match(message, {
@@ -18,7 +18,7 @@ test('handle errors', t => {
   t.end();
 });
 
-test('handle wreck errors', async t => {
+tap.test('handle wreck errors', async t => {
   const server = new Hapi.Server({ port: 8080 });
   await server.start();
   try {
@@ -35,7 +35,7 @@ test('handle wreck errors', async t => {
   t.end();
 });
 
-test('can use the blacklist regex to filter out sensitive info', t => {
+tap.test('can use the blacklist regex to filter out sensitive info', t => {
   const serialized = serialize({
     james: '1',
     spader: '2'
@@ -47,7 +47,7 @@ test('can use the blacklist regex to filter out sensitive info', t => {
   t.end();
 });
 
-test('blacklist will not change the original message object', t => {
+tap.test('blacklist will not change the original message object', t => {
   const messageObject = {
     james: '1',
     spader: 'something secret',
@@ -64,7 +64,7 @@ test('blacklist will not change the original message object', t => {
   t.end();
 });
 
-test('handle Buffer', t => {
+tap.test('handle Buffer', t => {
   const message = serialize(Buffer.from('hi there', 'utf8'));
   t.match(message, {
     type: 'Buffer',
@@ -73,7 +73,7 @@ test('handle Buffer', t => {
   t.end();
 });
 
-test('handle wreck json errors', async t => {
+tap.test('handle wreck json errors', async t => {
   const server = new Hapi.Server({ port: 8080 });
   server.route({
     path: '/',
@@ -98,7 +98,7 @@ test('handle wreck json errors', async t => {
   t.end();
 });
 
-test('handle nested things', t => {
+tap.test('handle nested things', t => {
   const r = {
     err: new Error('some error'),
     buffer: Buffer.from('hi there', 'utf8'),
@@ -124,7 +124,7 @@ test('handle nested things', t => {
   t.end();
 });
 
-test('handle max levels', t => {
+tap.test('handle max levels', t => {
   const r = {
     err: new Error('some error'),
     names: {
@@ -166,7 +166,7 @@ test('handle max levels', t => {
 });
 
 
-test('wont fail on null element', t => {
+tap.test('wont fail on null element', t => {
   const r = {
     err: new Error('some error'),
     buffer: Buffer.from('hi there', 'utf8'),
@@ -194,8 +194,65 @@ test('wont fail on null element', t => {
   t.end();
 });
 
+tap.test('wont fail on numbers', t => {
+  const r = {
+    numbers: {
+      one: 1,
+      two: 2
+    },
+    names: {
+      spader: '2',
+      nothing: null
+    }
+  };
+  const message = serialize(r, { blacklist: 'spader' });
+  t.match(message, {
+    numbers: {
+      one: 1,
+      two: 2
+    },
+    names: {
+      spader: 'xxxxxx',
+      nothing: null
+    }
+  });
+  t.end();
+});
 
-test('return strings without changing them', t => {
+tap.test('will pass back name of function', t => {
+  const someFunction = (src) => {
+    const x = src + 0;
+    return `Full: ${x}`;
+  };
+
+  const r = {
+    numbers: {
+      one: 1,
+      two: 2
+    },
+    names: {
+      spader: '2',
+      nothing: null
+    },
+    func: someFunction
+  };
+  const message = serialize(r, { blacklist: 'spader' });
+  t.match(message, {
+    numbers: {
+      one: 1,
+      two: 2
+    },
+    names: {
+      spader: 'xxxxxx',
+      nothing: null
+    },
+    func: 'Function someFunction'
+  });
+  t.end();
+});
+
+
+tap.test('return strings without changing them', t => {
   const message = serialize('this is just a message', {});
   t.equal(message, 'this is just a message');
   t.end();
