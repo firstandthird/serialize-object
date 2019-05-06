@@ -12,7 +12,7 @@
     "test": "tap test/*.test.js"
   },
   "dependencies": {
-    "serialize-error": "^2.1.0"
+    "serialize-error": "^4.1.0"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
